@@ -1,6 +1,5 @@
-import AppHeader from "@/shared/ui/AppHeader";
-import BottomNav from "@/shared/ui/BottomNav";
 import "./globals.css";
+import AppShell from "@/shared/ui/AppShell";
 
 export default function RootLayout({
   children,
@@ -10,9 +9,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AppHeader title="안녕하세요, Lotus!" />
-        {children}
-        <BottomNav />
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
