@@ -1,0 +1,39 @@
+import { ChevronDown } from "lucide-react";
+import { ReactNode } from "react";
+
+type Props = {
+  title: string;
+  selected: string;
+  handleClick: () => void;
+  isOpen: boolean;
+  children: ReactNode;
+};
+
+const Accordion = ({
+  title,
+  selected,
+  handleClick,
+  isOpen,
+  children,
+}: Props) => {
+  return (
+    <div className="w-full py-2 px-4 my-2">
+      <div
+        className="flex justify-between items-center text-lg cursor-pointer"
+        onClick={handleClick}
+      >
+        <div className="font-medium">{title}</div>
+        <div className="flex items-center">
+          <span className="mr-2 text-blue-600">{selected}</span>
+          <ChevronDown
+            size={20}
+            className={`text-gray-400 transition-transform duration-200 ${isOpen ? "-rotate-180" : ""}`}
+          />
+        </div>
+      </div>
+      {isOpen && <div className="mt-2">{children}</div>}
+    </div>
+  );
+};
+
+export default Accordion;
