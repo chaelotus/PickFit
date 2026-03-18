@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 const titles: Record<string, string> = {
   "/": "안녕하세요, Lotus",
   "/clothes": "아이템",
-  "/clothes/new": "",
+  "/clothes/new": "아이템 등록",
   "/coordi": "코디",
   "/recommend": "추천",
 };
