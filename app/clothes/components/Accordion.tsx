@@ -3,24 +3,18 @@ import { ReactNode } from "react";
 
 type Props = {
   title: string;
-  selected: string;
-  handleClick: () => void;
+  selected?: string;
+  onClick: () => void;
   isOpen: boolean;
   children: ReactNode;
 };
 
-const Accordion = ({
-  title,
-  selected,
-  handleClick,
-  isOpen,
-  children,
-}: Props) => {
+const Accordion = ({ title, selected, onClick, isOpen, children }: Props) => {
   return (
     <div className="w-full py-2 px-4 my-2">
       <div
         className="flex justify-between items-center text-lg cursor-pointer"
-        onClick={handleClick}
+        onClick={onClick}
       >
         <div className="font-medium">{title}</div>
         <div className="flex items-center">
