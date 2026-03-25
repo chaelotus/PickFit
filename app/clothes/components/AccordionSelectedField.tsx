@@ -1,5 +1,5 @@
-import Accordion from "./Accordion";
-import MultiSelectChipGroup from "./MultiSelectChipGroup";
+import Accordion from "../../../shared/ui/accordion/Accordion";
+import MultiSelectChipGroup from "../../../shared/ui/chip/MultiSelectChipGroup";
 
 type Props = {
   title: string;

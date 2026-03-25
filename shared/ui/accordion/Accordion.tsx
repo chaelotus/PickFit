@@ -18,7 +18,12 @@ const Accordion = ({ title, selected, onClick, isOpen, children }: Props) => {
       >
         <div className="font-medium">{title}</div>
         <div className="flex items-center">
-          <span className="mr-2 text-blue-600">{selected}</span>
+          <span
+            className="mr-2 text-blue-600 truncate max-w-[150px]"
+            title={selected}
+          >
+            {selected}
+          </span>
           <ChevronDown
             size={20}
             className={`text-gray-400 transition-transform duration-200 ${isOpen ? "-rotate-180" : ""}`}
