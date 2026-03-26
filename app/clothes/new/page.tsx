@@ -3,6 +3,7 @@
 import { useState } from "react";
 import AccordionSelectedField from "../components/AccordionSelectedField";
 import Accordion from "../../../shared/ui/accordion/Accordion";
+import Input from "@/shared/ui/input/Input";
 
 const SEASON = ["봄", "여름", "가을", "겨울"];
 const TPO = [
@@ -111,10 +112,9 @@ const ClothesUpload = () => {
           selected={brand}
           isOpen={openSection.brand}
         >
-          <input
+          <Input
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
-            className="w-full rounded border px-3 py-2"
             placeholder="브랜드를 입력해주세요."
           />
         </Accordion>
@@ -124,31 +124,32 @@ const ClothesUpload = () => {
           selected={Object.values(purchaseInfo).filter(Boolean).join(",")}
           isOpen={openSection.purchase}
         >
-          <input
+          <Input
             value={purchaseInfo.price}
             onChange={(e) =>
               setPurchaseInfo((prev) => ({ ...prev, price: e.target.value }))
             }
-            className="w-full rounded border px-3 py-2"
             placeholder="가격"
           />
-          <input
+          <Input
             value={purchaseInfo.date}
             onChange={(e) =>
               setPurchaseInfo((prev) => ({ ...prev, date: e.target.value }))
             }
-            className="w-full rounded border px-3 py-2"
             placeholder="구매일"
           />
-          <input
+          <Input
             value={purchaseInfo.link}
             onChange={(e) =>
-              setPurchaseInfo((prev) => ({ ...prev, link: e.target.value }))
+              setPurchaseInfo((prev) => ({
+                ...prev,
+                link: e.target.value,
+              }))
             }
-            className="w-full rounded border px-3 py-2"
             placeholder="구매 링크"
           />
-          <input
+
+          <Input
             value={purchaseInfo.product_code}
             onChange={(e) =>
               setPurchaseInfo((prev) => ({
@@ -156,7 +157,6 @@ const ClothesUpload = () => {
                 product_code: e.target.value,
               }))
             }
-            className="w-full rounded border px-3 py-2"
             placeholder="코드"
           />
         </Accordion>
