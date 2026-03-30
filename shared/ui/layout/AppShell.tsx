@@ -9,7 +9,7 @@ const AppShell = ({ children }: Props) => {
   return (
     <div className="mx-auto min-h-screen max-w-md">
       <AppHeader />
-      <main className="pb-20">{children}</main>
+      <main className="pb-20 px-4 pt-4">{children}</main>
       <BottomNav />
     </div>
   );
