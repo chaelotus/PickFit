@@ -4,6 +4,7 @@ import { useState } from "react";
 import AccordionSelectedField from "../components/AccordionSelectedField";
 import Accordion from "../../../shared/ui/accordion/Accordion";
 import Input from "@/shared/ui/input/Input";
+import Button from "@/shared/ui/button/Button";
 
 const SEASON = ["봄", "여름", "가을", "겨울"];
 const TPO = [
@@ -168,6 +169,7 @@ const ClothesUpload = () => {
         >
           <textarea className="w-full h-[100px] rounded border px-3 py-2"></textarea>
         </Accordion>
+        <Button value={"저장"} w={"full"} color={"black"} />
       </form>
     </div>
   );
