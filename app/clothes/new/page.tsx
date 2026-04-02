@@ -1,36 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AccordionSelectedField from "../components/AccordionSelectedField";
 import Accordion from "../../../shared/ui/accordion/Accordion";
 import Input from "@/shared/ui/input/Input";
 import Button from "@/shared/ui/button/Button";
-
-const SEASON = ["봄", "여름", "가을", "겨울"];
-const TPO = [
-  "데일리",
-  "직장",
-  "데이트",
-  "경조사",
-  "여행",
-  "홈웨어",
-  "파티",
-  "운동",
-  "특별한날",
-  "기타",
-];
-const CATEGORY = [
-  "티셔츠",
-  "긴팔티",
-  "카라티",
-  "셔츠",
-  "맨투맨",
-  "후드티",
-  "니트",
-  "가디건",
-  "파자마",
-  "기타",
-];
+import { fetchCodeMap } from "@/modules/closet/api";
+import { CodeOption } from "@/modules/closet/type";
 
 const ClothesUpload = () => {
   const [selectedMap, setSelectedMap] = useState({
@@ -53,6 +29,22 @@ const ClothesUpload = () => {
     price: "" as string | number,
     link: "" as string,
     product_code: "" as string,
+  });
+
+  const [codeMap, setCodeMap] = useState<{
+    season: CodeOption[];
+    tpo: CodeOption[];
+    category_top: CodeOption[];
+    category_bottom: CodeOption[];
+    category_shoes: CodeOption[];
+    category_accessory: CodeOption[];
+  }>({
+    season: [],
+    tpo: [],
+    category_top: [],
+    category_bottom: [],
+    category_shoes: [],
+    category_accessory: [],
   });
 
   type SectionField = keyof typeof openSection;
@@ -79,13 +71,24 @@ const ClothesUpload = () => {
       };
     });
   };
+
+  useEffect(() => {
+    const load = async () => {
+      const grouped = await fetchCodeMap();
+      if (grouped) {
+        setCodeMap(grouped);
+      }
+    };
+    load();
+  }, []);
+
   return (
     <div>
       <div className="">img</div>
       <form action="">
         <AccordionSelectedField
           title={"계절"}
-          items={SEASON}
+          items={codeMap.season}
           selected={selectedMap.season}
           isOpen={openSection.season}
           onToggle={() => handleToggleSection("season")}
@@ -93,7 +96,7 @@ const ClothesUpload = () => {
         />
         <AccordionSelectedField
           title={"TPO"}
-          items={TPO}
+          items={codeMap.tpo}
           selected={selectedMap.tpo}
           isOpen={openSection.tpo}
           onToggle={() => handleToggleSection("tpo")}
@@ -101,7 +104,7 @@ const ClothesUpload = () => {
         />
         <AccordionSelectedField
           title={"카테고리"}
-          items={CATEGORY}
+          items={codeMap.category_top}
           selected={selectedMap.category}
           isOpen={openSection.category}
           onToggle={() => handleToggleSection("category")}
