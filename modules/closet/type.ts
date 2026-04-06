@@ -23,4 +23,5 @@ export type CodeMap = {
   category_bottom: CodeOption[];
   category_shoes: CodeOption[];
   category_accessory: CodeOption[];
+  color: CodeOption[];
 };

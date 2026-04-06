@@ -26,6 +26,7 @@ export const fetchCodeMap = async () => {
       "CATEGORY_BOTTOM",
       "CATEGORY_SHOES",
       "CATEGORY_ACCESSORY",
+      "COLOR",
     ])
     .order("disp_order", { ascending: true });
 
@@ -41,6 +42,7 @@ export const fetchCodeMap = async () => {
     category_bottom: [],
     category_shoes: [],
     category_accessory: [],
+    color: [],
   };
 
   const grouped = (data ?? []).reduce((acc, item) => {
