@@ -8,10 +8,40 @@ import Button from "@/shared/ui/button/Button";
 import { fetchCodeMap } from "@/modules/closet/api";
 import { CodeOption } from "@/modules/closet/type";
 import MultiSelectChipGroup from "@/shared/ui/chip/MultiSelectChipGroup";
+import { z } from "zod";
 
 type MainCategory = "TOP" | "BOTTOM" | "SHOES" | "ACCESSORY" | null;
 
+const clothesSchema = z.object({
+  // --- 필수 항목 ---
+  season: z.array(z.string()).min(1, "계절을 선택해 주세요."),
+  tpo: z.array(z.string()).min(1, "TPO를 선택해 주세요."),
+  category: z.array(z.string()).min(1, "카테고리를 선택해 주세요."),
+  // --- 선택 항목 ---
+  color: z.array(z.string()).optional(),
+  brand: z.string().optional(),
+  price: z.number().optional(),
+  // 구매 정보
+  purchaseInfo: z
+    .object({
+      date: z.string().optional(),
+      // 가격 빈 문자열이 들어올수도, 숫자가 들어올수도
+      price: z.string().or(z.number()).optional(),
+      link: z
+        .string()
+        .url("올바른 URL 주소를 입력해주세요.")
+        .or(z.literal(""))
+        .optional(),
+      product_code: z.string().optional(),
+    })
+    .optional(),
+});
+
+type ClothesFormValues = z.infer<typeof clothesSchema>;
+
 const ClothesUpload = () => {
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
   const [mainCategory, setMainCategory] = useState<MainCategory>(null);
   const [selectedMap, setSelectedMap] = useState({
     season: [] as string[],
@@ -82,7 +112,6 @@ const ClothesUpload = () => {
 
   const handleMainCategoryClick = (category: MainCategory) => {
     setMainCategory(category);
-    // 대분류가 바뀌면 이전에 선택했던 소분류(셔츠, 바지 등)는 초기화해주는 게 안전합니다.
     setSelectedMap((prev) => ({ ...prev, category: [] }));
   };
 
@@ -103,22 +132,66 @@ const ClothesUpload = () => {
     { id: "SHOES", name: "신발" },
     { id: "ACCESSORY", name: "악세사리" },
   ];
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = {
+      season: selectedMap.season,
+      tpo: selectedMap.tpo,
+      category: selectedMap.category,
+      color: selectedMap.color,
+      brand,
+      purchaseInfo,
+      memo,
+    };
+    // zod 검증
+    const result = clothesSchema.safeParse(formData);
+
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+
+      result.error.issues.forEach((err) => {
+        const fieldName = err.path[0] as string;
+        if (!newErrors[fieldName]) newErrors[fieldName] = err.message;
+      });
+      setFormErrors(newErrors);
+
+      // 에러가 있는 첫 번째 위치로 스크롤
+      const firstErrorField = result.error.issues[0].path[0];
+      const element = document.getElementById(
+        `field-${firstErrorField.toString()}`,
+      );
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
+    setFormErrors({});
+    console.log("Supabase Data", result.data);
+    // 폼 저장
+    // insert
+  };
   return (
     <div>
-      <div className="">img</div>
-      <form action="">
+      <form onSubmit={handleSubmit}>
+        {/* <div className="">img</div> */}
         <AccordionSelectedField
+          id="season"
           title={"계절"}
           items={codeMap.season}
           selected={selectedMap.season}
+          error={formErrors.season}
           isOpen={openSection.season}
           onToggle={() => handleToggleSection("season")}
           onSelect={(item) => handleSelectItem("season", item)}
         />
         <AccordionSelectedField
+          id="tpo"
           title={"TPO"}
           items={codeMap.tpo}
           selected={selectedMap.tpo}
+          error={formErrors.tpo}
           isOpen={openSection.tpo}
           onToggle={() => handleToggleSection("tpo")}
           onSelect={(item) => handleSelectItem("tpo", item)}
@@ -131,80 +204,89 @@ const ClothesUpload = () => {
           onToggle={() => handleToggleSection("category")}
           onSelect={(item) => handleSelectItem("category", item)}
         /> */}
-        <Accordion
-          title={"카테고리"}
-          onClick={() => handleToggleSection("category")}
-          selected={codeMap.category_top
-            .concat(
-              codeMap.category_bottom,
-              codeMap.category_shoes,
-              codeMap.category_accessory,
-            )
-            .filter((item) => selectedMap.category.includes(item.code_id))
-            .map((item) => item.code_name)
-            .join(",")}
-          isOpen={openSection.category}
-        >
-          {/* 1단계 : 대분류 선택 */}
-          <div className="mb-4">
-            <p className="text-xs text-gray-400 mb-2">대분류 선택</p>
-            <div className="flex gap-2 flex-wrap">
-              {mainCategoryOptions.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() =>
-                    handleMainCategoryClick(cat.id as MainCategory)
-                  }
-                  className={`px-4 py1.5 rounded-full border text-sm ${mainCategory === cat.id ? "bg-black text-white" : "bg-white text-gray-600"}`}
-                >
-                  {cat.name}
-                </button>
-              ))}
+        <div id="field-category" className="flex flex-col gap-1 mb-4">
+          <Accordion
+            title={"카테고리"}
+            onClick={() => handleToggleSection("category")}
+            selected={codeMap.category_top
+              .concat(
+                codeMap.category_bottom,
+                codeMap.category_shoes,
+                codeMap.category_accessory,
+              )
+              .filter((item) => selectedMap.category.includes(item.code_id))
+              .map((item) => item.code_name)
+              .join(",")}
+            isOpen={openSection.category}
+          >
+            {/* 1단계 : 대분류 선택 */}
+            <div className="mb-4">
+              <p className="text-xs text-gray-400 mb-2">대분류 선택</p>
+              <div className="flex gap-2 flex-wrap">
+                {mainCategoryOptions.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() =>
+                      handleMainCategoryClick(cat.id as MainCategory)
+                    }
+                    className={`px-4 py1.5 rounded-full border text-sm ${mainCategory === cat.id ? "bg-black text-white" : "bg-white text-gray-600"}`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <hr className="my-4 border-gray-100" />
-          {/* 단계 2: 소분류 선택 (대분류가 선택되었을 때만 노출) */}
+            <hr className="my-4 border-gray-100" />
+            {/* 단계 2: 소분류 선택 (대분류가 선택되었을 때만 노출) */}
 
-          <div>
-            <p className="text-xs text-gray-400 mb-2">상세 카테고리</p>
-            {!mainCategory && (
-              <p className="text-sm text-gray-300">
-                대분류를 먼저 선택해주세요.
-              </p>
-            )}
-            {mainCategory === "TOP" && (
-              <MultiSelectChipGroup
-                items={codeMap.category_top}
-                selected={selectedMap.category}
-                onClick={(id) => handleSelectItem("category", id)}
-              />
-            )}
-            {mainCategory === "BOTTOM" && (
-              <MultiSelectChipGroup
-                items={codeMap.category_bottom}
-                selected={selectedMap.category}
-                onClick={(id) => handleSelectItem("category", id)}
-              />
-            )}
-            {mainCategory === "SHOES" && (
-              <MultiSelectChipGroup
-                items={codeMap.category_shoes}
-                selected={selectedMap.category}
-                onClick={(id) => handleSelectItem("category", id)}
-              />
-            )}
-            {mainCategory === "ACCESSORY" && (
-              <MultiSelectChipGroup
-                items={codeMap.category_accessory}
-                selected={selectedMap.category}
-                onClick={(id) => handleSelectItem("category", id)}
-              />
-            )}
-          </div>
-        </Accordion>
+            <div>
+              <p className="text-xs text-gray-400 mb-2">상세 카테고리</p>
+              {!mainCategory && (
+                <p className="text-sm text-gray-300">
+                  대분류를 먼저 선택해주세요.
+                </p>
+              )}
+              {mainCategory === "TOP" && (
+                <MultiSelectChipGroup
+                  items={codeMap.category_top}
+                  selected={selectedMap.category}
+                  onClick={(id) => handleSelectItem("category", id)}
+                />
+              )}
+              {mainCategory === "BOTTOM" && (
+                <MultiSelectChipGroup
+                  items={codeMap.category_bottom}
+                  selected={selectedMap.category}
+                  onClick={(id) => handleSelectItem("category", id)}
+                />
+              )}
+              {mainCategory === "SHOES" && (
+                <MultiSelectChipGroup
+                  items={codeMap.category_shoes}
+                  selected={selectedMap.category}
+                  onClick={(id) => handleSelectItem("category", id)}
+                />
+              )}
+              {mainCategory === "ACCESSORY" && (
+                <MultiSelectChipGroup
+                  items={codeMap.category_accessory}
+                  selected={selectedMap.category}
+                  onClick={(id) => handleSelectItem("category", id)}
+                />
+              )}
+            </div>
+          </Accordion>
+          {formErrors.category && (
+            <p className="text-red-500 text-xs px-1 font-medium animate-in fade-in duration-300">
+              {formErrors.category}
+            </p>
+          )}
+        </div>
+
         <AccordionSelectedField
+          id="color"
           title={"색상"}
           items={codeMap.color}
           selected={selectedMap.color}
@@ -274,7 +356,7 @@ const ClothesUpload = () => {
         >
           <textarea className="w-full h-[100px] rounded border px-3 py-2"></textarea>
         </Accordion>
-        <Button value={"저장"} w={"full"} color={"black"} />
+        <Button value={"저장"} w={"full"} color={"black"} type="submit" />
       </form>
     </div>
   );
