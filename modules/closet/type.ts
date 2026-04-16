@@ -1,14 +1,6 @@
-export type ClosetRow = {
-  id: number;
-  created_at: string;
-  updated_at: string;
-  category: string;
-  season: string;
-  color: string;
-  image_url: string;
-  min_temp: number;
-  max_temp: number;
-};
+import { z } from "zod";
+import { clothesSchema } from "./schema";
+
 export type CodeOption = {
   code_id: string;
   p_id: string;
@@ -25,3 +17,20 @@ export type CodeMap = {
   category_accessory: CodeOption[];
   color: CodeOption[];
 };
+
+export type ClothesFormValues = z.infer<typeof clothesSchema>;
+
+// DB에 실제로 들어갈 타입
+export interface ClothesInsertRow {
+  category: string;
+  season: string;
+  color: string;
+  // image_url: string;
+  tpo: string;
+  brand?: string | null;
+  price?: number | null;
+  purchase_date?: string | null;
+  purchase_link?: string | null;
+  item_code?: string | null;
+  memo?: string | null;
+}

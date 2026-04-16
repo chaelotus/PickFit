@@ -5,39 +5,12 @@ import AccordionSelectedField from "../components/AccordionSelectedField";
 import Accordion from "../../../shared/ui/accordion/Accordion";
 import Input from "@/shared/ui/input/Input";
 import Button from "@/shared/ui/button/Button";
-import { fetchCodeMap } from "@/modules/closet/api";
+import { fetchCodeMap, insertClothes } from "@/modules/closet/api";
 import { CodeOption } from "@/modules/closet/type";
 import MultiSelectChipGroup from "@/shared/ui/chip/MultiSelectChipGroup";
-import { z } from "zod";
+import { clothesSchema } from "@/modules/closet/schema";
 
 type MainCategory = "TOP" | "BOTTOM" | "SHOES" | "ACCESSORY" | null;
-
-const clothesSchema = z.object({
-  // --- 필수 항목 ---
-  season: z.array(z.string()).min(1, "계절을 선택해 주세요."),
-  tpo: z.array(z.string()).min(1, "TPO를 선택해 주세요."),
-  category: z.array(z.string()).min(1, "카테고리를 선택해 주세요."),
-  // --- 선택 항목 ---
-  color: z.array(z.string()).optional(),
-  brand: z.string().optional(),
-  price: z.number().optional(),
-  // 구매 정보
-  purchaseInfo: z
-    .object({
-      date: z.string().optional(),
-      // 가격 빈 문자열이 들어올수도, 숫자가 들어올수도
-      price: z.string().or(z.number()).optional(),
-      link: z
-        .string()
-        .url("올바른 URL 주소를 입력해주세요.")
-        .or(z.literal(""))
-        .optional(),
-      product_code: z.string().optional(),
-    })
-    .optional(),
-});
-
-type ClothesFormValues = z.infer<typeof clothesSchema>;
 
 const ClothesUpload = () => {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -171,6 +144,7 @@ const ClothesUpload = () => {
     console.log("Supabase Data", result.data);
     // 폼 저장
     // insert
+    insertClothes(result.data);
   };
   return (
     <div>
@@ -354,7 +328,12 @@ const ClothesUpload = () => {
           selected={memo}
           isOpen={openSection.memo}
         >
-          <textarea className="w-full h-[100px] rounded border px-3 py-2"></textarea>
+          <textarea
+            className="w-full h-[100px] rounded border px-3 py-2"
+            value={memo}
+            onChange={(e) => setMemo(e.target.value)}
+            placeholder="메모를 입력해주세요."
+          ></textarea>
         </Accordion>
         <Button value={"저장"} w={"full"} color={"black"} type="submit" />
       </form>
