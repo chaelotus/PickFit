@@ -9,10 +9,12 @@ import { fetchCodeMap, insertClothes } from "@/modules/closet/api";
 import { CodeOption } from "@/modules/closet/type";
 import MultiSelectChipGroup from "@/shared/ui/chip/MultiSelectChipGroup";
 import { clothesSchema } from "@/modules/closet/schema";
+import { useRouter } from "next/navigation";
 
 type MainCategory = "TOP" | "BOTTOM" | "SHOES" | "ACCESSORY" | null;
 
 const ClothesUpload = () => {
+  const router = useRouter();
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const [mainCategory, setMainCategory] = useState<MainCategory>(null);
@@ -145,6 +147,9 @@ const ClothesUpload = () => {
     // 폼 저장
     // insert
     insertClothes(result.data);
+    // 모달 추가
+    alert("옷이 저장되었습니다.");
+    router.push("/clothes");
   };
   return (
     <div>
