@@ -14,7 +14,7 @@ const navItems = [
 const BottomNav = () => {
   const pathname = usePathname();
   return (
-    <nav className="fixed bottom-0 left-0 right-0 border-t">
+    <nav className="fixed bottom-0 left-0 right-0 border-t bg-white">
       <div className="mx-auto h-16 max-w-md grid grid-cols-5 items-center px-2">
         {navItems.map(({ href, label, icon: Icon, isPrimary }) => {
           const isActive = pathname === href;
