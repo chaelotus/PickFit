@@ -22,6 +22,7 @@ export type ClothesFormValues = z.infer<typeof clothesSchema>;
 
 // DB에 실제로 들어갈 타입
 export interface ClothesInsertRow {
+  id?: string | number;
   category: string;
   season: string;
   color: string;
@@ -33,4 +34,5 @@ export interface ClothesInsertRow {
   purchase_link?: string | null;
   item_code?: string | null;
   memo?: string | null;
+  created_at?: string;
 }
