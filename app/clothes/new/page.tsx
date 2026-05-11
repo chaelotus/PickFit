@@ -1,349 +1,82 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import AccordionSelectedField from "../components/AccordionSelectedField";
-import Accordion from "../../../shared/ui/accordion/Accordion";
-import Input from "@/shared/ui/input/Input";
-import Button from "@/shared/ui/button/Button";
-import { fetchCodeMap, insertClothes } from "@/modules/closet/api";
-import { CodeOption } from "@/modules/closet/type";
-import MultiSelectChipGroup from "@/shared/ui/chip/MultiSelectChipGroup";
-import { clothesSchema } from "@/modules/closet/schema";
+import { useStorage } from "@/shared/hooks/useStorage";
+import { Camera, Image as ImageIcon, ShoppingBag } from "lucide-react";
 import { useRouter } from "next/navigation";
+import ImageSourceOption from "../components/ImageSourceOption";
+import { ImageSourceOptionProps } from "@/modules/closet/type";
 
-type MainCategory = "TOP" | "BOTTOM" | "SHOES" | "ACCESSORY" | null;
-
-const ClothesUpload = () => {
+const ImageUploadPage = () => {
   const router = useRouter();
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const { uploadImage, isUploading } = useStorage("clothes");
 
-  const [mainCategory, setMainCategory] = useState<MainCategory>(null);
-  const [selectedMap, setSelectedMap] = useState({
-    season: [] as string[],
-    tpo: [] as string[],
-    category: [] as string[],
-    color: [] as string[],
-  });
-  const [openSection, setOpenSection] = useState({
-    season: false as boolean,
-    tpo: false as boolean,
-    category: false as boolean,
-    color: false as boolean,
-    brand: false as boolean,
-    purchase: false as boolean,
-    memo: false as boolean,
-  });
-  const [brand, setBrand] = useState("");
-  const [memo, setMemo] = useState("");
-  const [purchaseInfo, setPurchaseInfo] = useState({
-    date: "" as string,
-    price: "" as string | number,
-    link: "" as string,
-    product_code: "" as string,
-  });
-
-  const [codeMap, setCodeMap] = useState<{
-    season: CodeOption[];
-    tpo: CodeOption[];
-    category_top: CodeOption[];
-    category_bottom: CodeOption[];
-    category_shoes: CodeOption[];
-    category_accessory: CodeOption[];
-    color: CodeOption[];
-  }>({
-    season: [],
-    tpo: [],
-    category_top: [],
-    category_bottom: [],
-    category_shoes: [],
-    category_accessory: [],
-    color: [],
-  });
-
-  type SectionField = keyof typeof openSection;
-  type SelectField = keyof typeof selectedMap;
-
-  const handleToggleSection = (section: SectionField) => {
-    setOpenSection((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
-
-  const handleSelectItem = (field: SelectField, item: string) => {
-    setSelectedMap((prev) => {
-      const current = prev[field];
-
-      const next = current.includes(item)
-        ? current.filter((el) => el !== item)
-        : [...current, item];
-
-      return {
-        ...prev,
-        [field]: next,
-      };
-    });
-  };
-
-  const handleMainCategoryClick = (category: MainCategory) => {
-    setMainCategory(category);
-    setSelectedMap((prev) => ({ ...prev, category: [] }));
-  };
-
-  useEffect(() => {
-    const load = async () => {
-      const grouped = await fetchCodeMap();
-      if (grouped) {
-        setCodeMap(grouped);
-      }
-    };
-    load();
-  }, []);
-
-  // 대분류 칩에 표시할 데이터 (정적 데이터)
-  const mainCategoryOptions = [
-    { id: "TOP", name: "상의" },
-    { id: "BOTTOM", name: "하의" },
-    { id: "SHOES", name: "신발" },
-    { id: "ACCESSORY", name: "악세사리" },
+  const UPLOAD_OPTIONS: ImageSourceOptionProps[] = [
+    { id: "album", icon: ImageIcon, label: "앨범에서 선택", type: "file" },
+    {
+      id: "camera",
+      icon: Camera,
+      label: "카메라로 촬영",
+      type: "file",
+      capture: "environment",
+    },
+    { id: "store", icon: ShoppingBag, label: "온라인 스토어", type: "button" },
   ];
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    const formData = {
-      season: selectedMap.season,
-      tpo: selectedMap.tpo,
-      category: selectedMap.category,
-      color: selectedMap.color,
-      brand,
-      purchaseInfo,
-      memo,
-    };
-    // zod 검증
-    const result = clothesSchema.safeParse(formData);
-
-    if (!result.success) {
-      const newErrors: Record<string, string> = {};
-
-      result.error.issues.forEach((err) => {
-        const fieldName = err.path[0] as string;
-        if (!newErrors[fieldName]) newErrors[fieldName] = err.message;
-      });
-      setFormErrors(newErrors);
-
-      // 에러가 있는 첫 번째 위치로 스크롤
-      const firstErrorField = result.error.issues[0].path[0];
-      const element = document.getElementById(
-        `field-${firstErrorField.toString()}`,
+    try {
+      const publicUrl = await uploadImage(file, "clothes");
+      router.push(
+        `/clothes/new/details?image=${encodeURIComponent(publicUrl)}`,
       );
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-      return;
+    } catch (error) {
+      alert("이미지 업로드에 실패했습니다. 다시 시도해주세요.");
     }
-    setFormErrors({});
-    console.log("Supabase Data", result.data);
-    // 폼 저장
-    // insert
-    insertClothes(result.data);
-    // 모달 추가
-    alert("옷이 저장되었습니다.");
-    router.push("/clothes");
+  };
+
+  const handleButtonClick = (id: string = "") => {
+    if (id === "store") {
+      console.log(
+        "온라인 스토어에서 이미지 선택 기능은 아직 구현되지 않았습니다.",
+      );
+    }
   };
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        {/* <div className="">img</div> */}
-        <AccordionSelectedField
-          id="season"
-          title={"계절"}
-          items={codeMap.season}
-          selected={selectedMap.season}
-          error={formErrors.season}
-          isOpen={openSection.season}
-          onToggle={() => handleToggleSection("season")}
-          onSelect={(item) => handleSelectItem("season", item)}
-        />
-        <AccordionSelectedField
-          id="tpo"
-          title={"TPO"}
-          items={codeMap.tpo}
-          selected={selectedMap.tpo}
-          error={formErrors.tpo}
-          isOpen={openSection.tpo}
-          onToggle={() => handleToggleSection("tpo")}
-          onSelect={(item) => handleSelectItem("tpo", item)}
-        />
-        {/* <AccordionSelectedField
-          title={"카테고리"}
-          items={codeMap.category_top}
-          selected={selectedMap.category}
-          isOpen={openSection.category}
-          onToggle={() => handleToggleSection("category")}
-          onSelect={(item) => handleSelectItem("category", item)}
-        /> */}
-        <div id="field-category" className="flex flex-col gap-1 mb-4">
-          <Accordion
-            title={"카테고리"}
-            onClick={() => handleToggleSection("category")}
-            selected={codeMap.category_top
-              .concat(
-                codeMap.category_bottom,
-                codeMap.category_shoes,
-                codeMap.category_accessory,
-              )
-              .filter((item) => selectedMap.category.includes(item.code_id))
-              .map((item) => item.code_name)
-              .join(",")}
-            isOpen={openSection.category}
-          >
-            {/* 1단계 : 대분류 선택 */}
-            <div className="mb-4">
-              <p className="text-xs text-gray-400 mb-2">대분류 선택</p>
-              <div className="flex gap-2 flex-wrap">
-                {mainCategoryOptions.map((cat) => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() =>
-                      handleMainCategoryClick(cat.id as MainCategory)
-                    }
-                    className={`px-4 py1.5 rounded-full border text-sm ${mainCategory === cat.id ? "bg-black text-white" : "bg-white text-gray-600"}`}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
-              </div>
-            </div>
+    <div className="flex flex-col gap-6 ">
+      <header>
+        <h1 className="text-2xl font-bold">사진 등록</h1>
+        <p className="text-gray-500">옷의 사진을 먼저 등록해 주세요.</p>
+      </header>
 
-            <hr className="my-4 border-gray-100" />
-            {/* 단계 2: 소분류 선택 (대분류가 선택되었을 때만 노출) */}
+      <div className="grid grid-cols-2 gap-2">
+        {UPLOAD_OPTIONS.map((option) => (
+          <ImageSourceOption
+            key={option.id}
+            icon={option.icon}
+            label={option.label}
+            type={option.type}
+            capture={option.capture}
+            onChange={option.type == "file" ? handleFileChange : undefined}
+            onClick={
+              option.type == "button"
+                ? () => handleButtonClick(option.id)
+                : undefined
+            }
+          />
+        ))}
+      </div>
 
-            <div>
-              <p className="text-xs text-gray-400 mb-2">상세 카테고리</p>
-              {!mainCategory && (
-                <p className="text-sm text-gray-300">
-                  대분류를 먼저 선택해주세요.
-                </p>
-              )}
-              {mainCategory === "TOP" && (
-                <MultiSelectChipGroup
-                  items={codeMap.category_top}
-                  selected={selectedMap.category}
-                  onClick={(id) => handleSelectItem("category", id)}
-                />
-              )}
-              {mainCategory === "BOTTOM" && (
-                <MultiSelectChipGroup
-                  items={codeMap.category_bottom}
-                  selected={selectedMap.category}
-                  onClick={(id) => handleSelectItem("category", id)}
-                />
-              )}
-              {mainCategory === "SHOES" && (
-                <MultiSelectChipGroup
-                  items={codeMap.category_shoes}
-                  selected={selectedMap.category}
-                  onClick={(id) => handleSelectItem("category", id)}
-                />
-              )}
-              {mainCategory === "ACCESSORY" && (
-                <MultiSelectChipGroup
-                  items={codeMap.category_accessory}
-                  selected={selectedMap.category}
-                  onClick={(id) => handleSelectItem("category", id)}
-                />
-              )}
-            </div>
-          </Accordion>
-          {formErrors.category && (
-            <p className="text-red-500 text-xs px-1 font-medium animate-in fade-in duration-300">
-              {formErrors.category}
-            </p>
-          )}
+      {isUploading && (
+        <div className="fixed inset-0 bg-white/80 flex items-center justify-center">
+          <p className="font-medium animate-pulse">
+            이미지를 업로드 중입니다...
+          </p>
         </div>
-
-        <AccordionSelectedField
-          id="color"
-          title={"색상"}
-          items={codeMap.color}
-          selected={selectedMap.color}
-          isOpen={openSection.color}
-          onToggle={() => handleToggleSection("color")}
-          onSelect={(item) => handleSelectItem("color", item)}
-        />
-        <Accordion
-          title={"브랜드"}
-          onClick={() => handleToggleSection("brand")}
-          selected={brand}
-          isOpen={openSection.brand}
-        >
-          <Input
-            value={brand}
-            onChange={(e) => setBrand(e.target.value)}
-            placeholder="브랜드를 입력해주세요."
-          />
-        </Accordion>
-        <Accordion
-          title={"구매"}
-          onClick={() => handleToggleSection("purchase")}
-          selected={Object.values(purchaseInfo).filter(Boolean).join(",")}
-          isOpen={openSection.purchase}
-        >
-          <Input
-            value={purchaseInfo.price}
-            onChange={(e) =>
-              setPurchaseInfo((prev) => ({ ...prev, price: e.target.value }))
-            }
-            placeholder="가격"
-          />
-          <Input
-            value={purchaseInfo.date}
-            onChange={(e) =>
-              setPurchaseInfo((prev) => ({ ...prev, date: e.target.value }))
-            }
-            placeholder="구매일"
-          />
-          <Input
-            value={purchaseInfo.link}
-            onChange={(e) =>
-              setPurchaseInfo((prev) => ({
-                ...prev,
-                link: e.target.value,
-              }))
-            }
-            placeholder="구매 링크"
-          />
-
-          <Input
-            value={purchaseInfo.product_code}
-            onChange={(e) =>
-              setPurchaseInfo((prev) => ({
-                ...prev,
-                product_code: e.target.value,
-              }))
-            }
-            placeholder="코드"
-          />
-        </Accordion>
-        <Accordion
-          title={"메모"}
-          onClick={() => handleToggleSection("memo")}
-          selected={memo}
-          isOpen={openSection.memo}
-        >
-          <textarea
-            className="w-full h-[100px] rounded border px-3 py-2"
-            value={memo}
-            onChange={(e) => setMemo(e.target.value)}
-            placeholder="메모를 입력해주세요."
-          ></textarea>
-        </Accordion>
-        <Button value={"저장"} w={"full"} color={"black"} type="submit" />
-      </form>
+      )}
     </div>
   );
 };
 
-export default ClothesUpload;
+export default ImageUploadPage;
