@@ -28,6 +28,7 @@ export const insertClothes = async (formData: ClothesFormValues) => {
     purchase_link: formData.purchaseInfo?.link,
     item_code: formData.purchaseInfo?.product_code,
     memo: formData.memo,
+    image_url: formData.image_url,
   };
   return await supabase.from("clothes").insert(payload);
 };

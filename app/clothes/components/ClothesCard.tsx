@@ -7,9 +7,17 @@ interface ClothesCardProps {
 const ClothesCard = ({ item }: ClothesCardProps) => {
   return (
     <div className="flex flex-col border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white">
-      {/* 사진 영역 (임시 목업) */}
-      <div className="aspect-[3/4] bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
-        사진 영역
+      {/* 사진 영역 */}
+      <div className="aspect-[3/4] bg-gray-100 flex items-center justify-center text-gray-400 text-sm overflow-hidden">
+        {item.image_url ? (
+          <img
+            src={item.image_url}
+            alt={item.brand || "옷 이미지"}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          "사진 없음"
+        )}
       </div>
 
       {/* 정보 영역 */}

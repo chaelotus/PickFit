@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { clothesSchema } from "./schema";
+import { LucideIcon } from "lucide-react";
 
 export type CodeOption = {
   code_id: string;
@@ -35,4 +36,15 @@ export interface ClothesInsertRow {
   item_code?: string | null;
   memo?: string | null;
   created_at?: string;
+  image_url: string;
+}
+
+export interface ImageSourceOptionProps {
+  id?: string;
+  icon: LucideIcon;
+  label: string;
+  type?: "file" | "button";
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onClick?: () => void;
+  capture?: "environment" | "user";
 }
