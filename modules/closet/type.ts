@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { clothesSchema } from "./schema";
+import { LucideIcon } from "lucide-react";
 
 export type CodeOption = {
   code_id: string;
@@ -22,6 +23,7 @@ export type ClothesFormValues = z.infer<typeof clothesSchema>;
 
 // DB에 실제로 들어갈 타입
 export interface ClothesInsertRow {
+  id?: string | number;
   category: string;
   season: string;
   color: string;
@@ -33,4 +35,16 @@ export interface ClothesInsertRow {
   purchase_link?: string | null;
   item_code?: string | null;
   memo?: string | null;
+  created_at?: string;
+  image_url: string;
+}
+
+export interface ImageSourceOptionProps {
+  id?: string;
+  icon: LucideIcon;
+  label: string;
+  type?: "file" | "button";
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onClick?: () => void;
+  capture?: "environment" | "user";
 }

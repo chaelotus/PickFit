@@ -9,9 +9,13 @@ import {
 const supabase = createClient();
 
 export const fetchClothes = async () => {
-  return await supabase.from("clothes").select("*");
+  return await supabase
+    .from("clothes")
+    .select(`*,created_at::date`)
+    .order("created_at", { ascending: false });
 };
 
+// 옷 item 등록
 export const insertClothes = async (formData: ClothesFormValues) => {
   const payload: ClothesInsertRow = {
     category: formData.category.join(","), // 배열을 콤마로 연결해서 저장
@@ -24,6 +28,7 @@ export const insertClothes = async (formData: ClothesFormValues) => {
     purchase_link: formData.purchaseInfo?.link,
     item_code: formData.purchaseInfo?.product_code,
     memo: formData.memo,
+    image_url: formData.image_url,
   };
   return await supabase.from("clothes").insert(payload);
 };
